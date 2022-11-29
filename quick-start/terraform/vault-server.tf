@@ -8,6 +8,7 @@ resource "aws_instance" "vault-server" {
   vpc_security_group_ids      = [aws_security_group.vault-server.id]
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.vault-server.id
+  subnet_id = var.subnet_id
 
   tags = {
     Name = "${var.environment_name}-vault-server"
