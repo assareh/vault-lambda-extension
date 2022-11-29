@@ -176,7 +176,9 @@ sudo cat >> /etc/environment <<EOF
 export VAULT_TOKEN=$${VAULT_TOKEN}
 EOF
 
-vault audit enable -local=true file file_path=/tmp/vault_audit.log
+sudo touch /var/log/vault_audit.log
+sudo chown vault:vault /var/log/vault_audit.log
+vault audit enable file file_path=/var/log/vault_audit.log
 
 vault secrets enable -default-lease-ttl=2h -max-lease-ttl=2h aws 
 vault write aws/roles/tfc-demo-plan-role \
