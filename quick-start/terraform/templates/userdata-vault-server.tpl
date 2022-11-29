@@ -83,7 +83,7 @@ sudo chown vault:vault /usr/local/bin/vault
 sudo mkdir -pm 0755 /etc/vault.d
 sudo mkdir -pm 0755 /etc/ssl/vault
 
-openssl req -new -newkey rsa:4096 -x509 -sha256 -days 365 -nodes -out tls.crt -keyout tls.key
+openssl req -x509 -newkey rsa:4096 -keyout tls.key -out tls.crt -sha256 -days 365 -subj "/CN=localhost"
 sudo mv tls.* /etc/ssl/vault/.
 sudo chmod 0644 tls.crt
 sudo chmod 0600 tls.key
