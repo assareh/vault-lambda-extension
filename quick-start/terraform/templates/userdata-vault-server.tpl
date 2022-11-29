@@ -189,12 +189,7 @@ vault write aws/roles/tfc-demo-plan-role \
   "Statement": [
     {
       "Effect": "Allow",
-      "Action": [
-        "ec2:DescribeAccountAttributes",
-        "ec2:DescribeImages", 
-        "ec2:DescribeKeyPairs", 
-        "ec2:DescribeVpcs"
-      ],
+      "Action": ["ec2:Describe*"],
       "Resource": ["*"]
     }
   ]
