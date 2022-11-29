@@ -34,3 +34,7 @@ variable "local_extension" {
   type = bool
   default = false
 }
+
+variable "vpc_id" {
+  type = string
+}

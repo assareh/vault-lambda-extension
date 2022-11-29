@@ -2,6 +2,8 @@ resource "aws_security_group" "vault-server" {
   name        = "${var.environment_name}-vault-server-sg"
   description = "SSH and Internal Traffic"
 
+  vpc_id      = var.vpc_id
+
   tags = {
     Name = var.environment_name
   }
@@ -49,6 +51,8 @@ resource "aws_security_group" "vault-server" {
 resource "aws_security_group" "rds" {
   name        = "${var.environment_name}-rds-sg"
   description = "Postgres traffic"
+
+  vpc_id      = var.vpc_id
 
   tags = {
     Name = var.environment_name
