@@ -73,20 +73,25 @@ user_ubuntu
 ##--------------------------------------------------------------------
 ## Install Vault
 
-logger "Downloading Vault"
-curl -o /tmp/vault.zip $${VAULT_ZIP}
+wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+sudo apt-get update
+sudo apt-get install -y vault
 
-logger "Installing Vault"
-sudo unzip -o /tmp/vault.zip -d /usr/local/bin/
-sudo chmod 0755 /usr/local/bin/vault
-sudo chown vault:vault /usr/local/bin/vault
-sudo mkdir -pm 0755 /etc/vault.d
-sudo mkdir -pm 0755 /etc/ssl/vault
+# logger "Downloading Vault"
+# curl -o /tmp/vault.zip $${VAULT_ZIP}
 
-openssl req -x509 -newkey rsa:4096 -keyout tls.key -out tls.crt -sha256 -days 365 -subj "/CN=localhost"
-sudo mv tls.* /etc/ssl/vault/.
-sudo chmod 0644 tls.crt
-sudo chmod 0600 tls.key
+# logger "Installing Vault"
+# sudo unzip -o /tmp/vault.zip -d /usr/local/bin/
+# sudo chmod 0755 /usr/local/bin/vault
+# sudo chown vault:vault /usr/local/bin/vault
+# sudo mkdir -pm 0755 /etc/vault.d
+# sudo mkdir -pm 0755 /etc/ssl/vault
+
+# openssl req -x509 -newkey rsa:4096 -keyout tls.key -out tls.crt -sha256 -days 365 -subj "/CN=localhost"
+# sudo mv tls.* /etc/ssl/vault/.
+# sudo chmod 0644 tls.crt
+# sudo chmod 0600 tls.key
 
 logger "/usr/local/bin/vault --version: $(/usr/local/bin/vault --version)"
 
@@ -99,8 +104,8 @@ storage "file" {
 listener "tcp" {
   address     = "$${PRIVATE_IP}:8200"
 
-  tls_cert_file            = "/etc/ssl/vault/tls.crt"
-  tls_key_file             = "/etc/ssl/vault/tls.key"
+  tls_cert_file            = "/opt/vault/tls/tls.crt"
+  tls_key_file             = "/opt/vault/tls/tls.key"
   tls_disable_client_certs = "true"
 }
 
