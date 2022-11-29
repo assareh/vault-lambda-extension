@@ -189,7 +189,7 @@ vault write aws/roles/tfc-demo-plan-role \
   "Statement": [
     {
       "Effect": "Allow",
-      "Action": ["ec2:DescribeRegions"],
+      "Action": ["ec2:DescribeInstances"],
       "Resource": ["*"]
     }
   ]
@@ -229,14 +229,6 @@ cat >> payload.json <<EOF
 EOF
 
 vault write auth/jwt/role/tfc-demo-plan-role @payload.json
-
-vault auth enable aws
-vault write -force auth/aws/config/client
-vault write auth/aws/role/${tpl_role_name} \
-  auth_type=iam \
-  bound_iam_principal_arn="${tpl_bound_role}" \
-  policies=lambda-function \
-  ttl=24h
 
 logger "Complete"
 

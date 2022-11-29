@@ -15,5 +15,5 @@ output "vault_addr" {
 }
 
 output "ssh_private_key" {
-value = nonsensitive(tls_private_key.main.private_key_pem)
+  value = nonsensitive(tls_private_key.main.private_key_pem)
 }
