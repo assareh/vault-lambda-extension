@@ -18,6 +18,11 @@ resource "aws_iam_role_policy" "vault-server" {
   policy = data.aws_iam_policy_document.vault-server.json
 }
 
+resource "aws_iam_role_policy_attachment" "vault-server" {
+  role       = aws_iam_role.vault-server.id
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
+}
+
 //--------------------------------------------------------------------
 // Data Sources
 
@@ -35,11 +40,9 @@ data "aws_iam_policy_document" "assume_role_ec2" {
 
 data "aws_iam_policy_document" "vault-server" {
   statement {
-    sid    = "ConsulAutoJoin"
-    effect = "Allow"
-
-    actions = ["ec2:DescribeInstances"]
-
+    sid       = "ConsulAutoJoin"
+    effect    = "Allow"
+    actions   = ["ec2:DescribeInstances"]
     resources = ["*"]
   }
 
