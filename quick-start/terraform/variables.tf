@@ -25,13 +25,13 @@ variable "db_instance_type" {
 
 # true if you want to set and use VAULT_ASSUME_ROLE_ARN
 variable "assume_role" {
-  type = bool
+  type    = bool
   default = false
 }
 
 # true if you want to use the locally built extension in pkg/vault-lambda-extension.zip
 variable "local_extension" {
-  type = bool
+  type    = bool
   default = false
 }
 
@@ -40,5 +40,13 @@ variable "vpc_id" {
 }
 
 variable "subnet_id" {
+  type = string
+}
+
+variable "organization" {
+  type = string
+}
+
+variable "workspace" {
   type = string
 }

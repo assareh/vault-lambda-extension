@@ -8,7 +8,7 @@ resource "aws_instance" "vault-server" {
   vpc_security_group_ids      = [aws_security_group.vault-server.id]
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.vault-server.id
-  subnet_id = var.subnet_id
+  subnet_id                   = var.subnet_id
 
   tags = {
     Name = "${var.environment_name}-vault-server"
@@ -24,6 +24,8 @@ resource "aws_instance" "vault-server" {
       tpl_account_id         = data.aws_caller_identity.current.account_id
       tpl_role_name          = aws_iam_role.lambda.name
       tpl_bound_role         = var.assume_role ? aws_iam_role.extra_role[0].arn : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${aws_iam_role.lambda.name}"
+      tpl_organization       = var.organization
+      tpl_workspace          = var.workspace
   })
 
   # Bit of a hack to wait for user_data script to finish running before returning

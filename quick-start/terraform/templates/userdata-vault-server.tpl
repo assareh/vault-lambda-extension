@@ -165,18 +165,55 @@ sudo cat >> /etc/environment <<EOF
 export VAULT_TOKEN=$${VAULT_TOKEN}
 EOF
 
-vault secrets enable -path="secret" kv
-vault kv put secret/myapp/config ttl='30s' username='appuser' password='suP3rsec(et!'
-
-vault policy write lambda-function - <<EOF
-path "secret/myapp/*" {
-    capabilities = ["read", "list"]
-}
-
-path "database/creds/lambda-function" {
-    capabilities = ["read"]
+vault secrets enable -default-lease-ttl=2h -max-lease-ttl=2h aws 
+vault write aws/roles/tfc-demo-plan-role \
+    credential_type=iam_user \
+    policy_document=-<<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["ec2:DescribeRegions"],
+      "Resource": ["*"]
+    }
+  ]
 }
 EOF
+
+vault policy write tfc-demo-plan-policy - <<EOF
+# Allow tokens to revoke themselves
+path "auth/token/revoke-self" {
+    capabilities = ["update"]
+}
+
+# Allow generate tfc demo plan role credentials
+path "aws/creds/tfc-demo-plan-role" {
+  capabilities = ["read"]
+}
+EOF
+
+vault auth enable jwt
+vault write auth/jwt/config \
+    oidc_discovery_url="https://app.terraform.io" \
+    bound_issuer="https://app.terraform.io"
+
+cat >> payload.json <<EOF
+{
+  "policies": ["tfc-demo-plan-policy"],
+  "token_ttl": "7200",
+  "token_max_ttl": "7200",
+  "bound_audiences": ["vault.workload.identity"],
+  "bound_claims_type": "glob",
+  "bound_claims": {
+    "sub": "organization:${tpl_organization}:workspace:${tpl_workspace}:run_phase:plan"
+  },
+  "user_claim": "terraform_full_workspace",
+  "role_type": "jwt"
+}
+EOF
+
+vault write auth/jwt/role/tfc-demo-plan-role @payload.json
 
 vault auth enable aws
 vault write -force auth/aws/config/client
@@ -185,11 +222,6 @@ vault write auth/aws/role/${tpl_role_name} \
   bound_iam_principal_arn="${tpl_bound_role}" \
   policies=lambda-function \
   ttl=24h
-
-# Set up RDS dynamic credentials
-
-# Don't rotate the password so that we're able to recreate our Vault EC2 instance without having to recreate the RDS instance
-#vault write -force database/rotate-root/postgres
 
 logger "Complete"
 
