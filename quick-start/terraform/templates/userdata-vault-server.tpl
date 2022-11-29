@@ -93,7 +93,7 @@ storage "file" {
 
 listener "tcp" {
   address     = "$${PRIVATE_IP}:8200"
-  tls_disable = 1
+  tls_disable = 0
 }
 
 seal "awskms" {
@@ -108,7 +108,7 @@ sudo chown -R vault:vault /etc/vault.d /etc/ssl/vault
 sudo chmod -R 0644 /etc/vault.d/*
 
 sudo tee -a /etc/environment <<EOF
-export VAULT_ADDR=http://$${PRIVATE_IP}:8200
+export VAULT_ADDR=https://$${PRIVATE_IP}:8200
 export VAULT_SKIP_VERIFY=true
 EOF
 

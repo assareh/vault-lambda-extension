@@ -25,12 +25,12 @@ resource "aws_security_group" "vault-server" {
   }
 
   # Vault cluster traffic
-  ingress {
-    from_port   = 8201
-    to_port     = 8201
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  # ingress {
+  #   from_port   = 8201
+  #   to_port     = 8201
+  #   protocol    = "tcp"
+  #   cidr_blocks = ["0.0.0.0/0"]
+  # }
 
   # Internal Traffic
   ingress {
