@@ -96,7 +96,7 @@ logger "/usr/bin/vault --version: $(/usr/bin/vault --version)"
 logger "Configuring Vault"
 sudo tee /etc/vault.d/vault.hcl <<EOF
 storage "file" {
-    path = "/srv/vault/data"
+    path = "/opt/vault/data"
 }
 
 listener "tcp" {
