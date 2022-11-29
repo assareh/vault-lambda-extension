@@ -187,20 +187,6 @@ vault write auth/aws/role/${tpl_role_name} \
   ttl=24h
 
 # Set up RDS dynamic credentials
-vault secrets enable database
-vault write database/config/postgres \
-  plugin_name="postgresql-database-plugin" \
-  allowed_roles="lambda-*" \
-  connection_url="postgres://{{username}}:{{password}}@${tpl_rds_endpoint}/lambdadb" \
-  username="vaultadmin" \
-  password="${tpl_rds_admin_password}"
-vault write database/roles/lambda-function \
-  db_name="postgres" \
-  default_ttl="1h" max_ttl="24h" \
-  creation_statements=- << EOF
-CREATE ROLE "{{name}}" WITH LOGIN ENCRYPTED PASSWORD '{{password}}' VALID UNTIL '{{expiration}}';
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO "{{name}}";
-EOF
 
 # Don't rotate the password so that we're able to recreate our Vault EC2 instance without having to recreate the RDS instance
 #vault write -force database/rotate-root/postgres

@@ -23,8 +23,6 @@ resource "aws_instance" "vault-server" {
       tpl_account_id         = data.aws_caller_identity.current.account_id
       tpl_role_name          = aws_iam_role.lambda.name
       tpl_bound_role         = var.assume_role ? aws_iam_role.extra_role[0].arn : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${aws_iam_role.lambda.name}"
-      tpl_rds_endpoint       = aws_db_instance.main.endpoint
-      tpl_rds_admin_password = random_password.password.result
   })
 
   # Bit of a hack to wait for user_data script to finish running before returning
