@@ -83,6 +83,11 @@ sudo chown vault:vault /usr/local/bin/vault
 sudo mkdir -pm 0755 /etc/vault.d
 sudo mkdir -pm 0755 /etc/ssl/vault
 
+openssl req -new -newkey rsa:4096 -x509 -sha256 -days 365 -nodes -out tls.crt -keyout tls.key
+sudo mv tls.* /etc/ssl/vault/.
+sudo chmod 0644 tls.crt
+sudo chmod 0600 tls.key
+
 logger "/usr/local/bin/vault --version: $(/usr/local/bin/vault --version)"
 
 logger "Configuring Vault"
@@ -93,7 +98,10 @@ storage "file" {
 
 listener "tcp" {
   address     = "$${PRIVATE_IP}:8200"
-  tls_disable = 0
+
+  tls_cert_file            = "/etc/ssl/vault/tls.crt"
+  tls_key_file             = "/etc/ssl/vault/tls.key"
+  tls_disable_client_certs = "true"
 }
 
 seal "awskms" {
