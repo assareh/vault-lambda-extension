@@ -208,12 +208,39 @@ path "aws/creds/tfc-demo-plan-role" {
 }
 EOF
 
+vault write aws/roles/tfc-demo-apply-role \
+    credential_type=iam_user \
+    policy_document=-<<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["ec2:*"],
+      "Resource": ["*"]
+    }
+  ]
+}
+EOF
+
+vault policy write tfc-demo-apply-policy - <<EOF
+# Allow tokens to revoke themselves
+path "auth/token/revoke-self" {
+    capabilities = ["update"]
+}
+
+# Allow generate tfc demo apply role credentials
+path "aws/creds/tfc-demo-apply-role" {
+  capabilities = ["read"]
+}
+EOF
+
 vault auth enable jwt
 vault write auth/jwt/config \
     oidc_discovery_url="https://app.terraform.io" \
     bound_issuer="https://app.terraform.io"
 
-cat >> payload.json <<EOF
+cat >> plan_payload.json <<EOF
 {
   "policies": ["tfc-demo-plan-policy"],
   "token_ttl": "7200",
@@ -228,7 +255,24 @@ cat >> payload.json <<EOF
 }
 EOF
 
-vault write auth/jwt/role/tfc-demo-plan-role @payload.json
+vault write auth/jwt/role/tfc-demo-plan-role @plan_payload.json
+
+cat >> apply_payload.json <<EOF
+{
+  "policies": ["tfc-demo-apply-policy"],
+  "token_ttl": "7200",
+  "token_max_ttl": "7200",
+  "bound_audiences": ["vault.workload.identity"],
+  "bound_claims_type": "glob",
+  "bound_claims": {
+    "sub": "organization:${tpl_organization}:workspace:${tpl_workspace}:run_phase:apply"
+  },
+  "user_claim": "terraform_full_workspace",
+  "role_type": "jwt"
+}
+EOF
+
+vault write auth/jwt/role/tfc-demo-plan-role @apply_payload.json
 
 logger "Complete"
 
