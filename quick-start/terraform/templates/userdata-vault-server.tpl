@@ -15,34 +15,32 @@ logger "Running"
 # Get Private IP address
 PRIVATE_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
 
-VAULT_ZIP="${tpl_vault_zip_file}"
-
 AWS_REGION="${tpl_aws_region}"
 KMS_KEY="${tpl_kms_key}"
 
 ##--------------------------------------------------------------------
 ## Functions
 
-user_ubuntu() {
-  # UBUNTU user setup
-  if ! getent group $${USER_GROUP} >/dev/null
-  then
-    sudo addgroup --system $${USER_GROUP} >/dev/null
-  fi
+# user_ubuntu() {
+#   # UBUNTU user setup
+#   if ! getent group $${USER_GROUP} >/dev/null
+#   then
+#     sudo addgroup --system $${USER_GROUP} >/dev/null
+#   fi
 
-  if ! getent passwd $${USER_NAME} >/dev/null
-  then
-    sudo adduser \
-      --system \
-      --disabled-login \
-      --ingroup $${USER_GROUP} \
-      --home $${USER_HOME} \
-      --no-create-home \
-      --gecos "$${USER_COMMENT}" \
-      --shell /bin/false \
-      $${USER_NAME}  >/dev/null
-  fi
-}
+#   if ! getent passwd $${USER_NAME} >/dev/null
+#   then
+#     sudo adduser \
+#       --system \
+#       --disabled-login \
+#       --ingroup $${USER_GROUP} \
+#       --home $${USER_HOME} \
+#       --no-create-home \
+#       --gecos "$${USER_COMMENT}" \
+#       --shell /bin/false \
+#       $${USER_NAME}  >/dev/null
+#   fi
+# }
 
 ##--------------------------------------------------------------------
 ## Install Base Prerequisites
@@ -62,13 +60,13 @@ sudo service ssh restart
 ##--------------------------------------------------------------------
 ## Configure Vault user
 
-USER_NAME="vault"
-USER_COMMENT="HashiCorp Vault user"
-USER_GROUP="vault"
-USER_HOME="/srv/vault"
+# USER_NAME="vault"
+# USER_COMMENT="HashiCorp Vault user"
+# USER_GROUP="vault"
+# USER_HOME="/srv/vault"
 
-logger "Setting up user $${USER_NAME} for Debian/Ubuntu"
-user_ubuntu
+# logger "Setting up user $${USER_NAME} for Debian/Ubuntu"
+# user_ubuntu
 
 ##--------------------------------------------------------------------
 ## Install Vault
@@ -93,7 +91,7 @@ sudo apt-get install -y vault
 # sudo chmod 0644 tls.crt
 # sudo chmod 0600 tls.key
 
-logger "/usr/local/bin/vault --version: $(/usr/local/bin/vault --version)"
+logger "/usr/bin/vault --version: $(/usr/bin/vault --version)"
 
 logger "Configuring Vault"
 sudo tee /etc/vault.d/vault.hcl <<EOF
@@ -117,7 +115,7 @@ seal "awskms" {
 ui=true
 EOF
 
-sudo chown -R vault:vault /etc/vault.d /etc/ssl/vault
+sudo chown -R vault:vault /etc/vault.d 
 sudo chmod -R 0644 /etc/vault.d/*
 
 sudo tee -a /etc/environment <<EOF
@@ -128,38 +126,38 @@ EOF
 source /etc/environment
 
 logger "Granting mlock syscall to vault binary"
-sudo setcap cap_ipc_lock=+ep /usr/local/bin/vault
+sudo setcap cap_ipc_lock=+ep /usr/bin/vault
 
 ##--------------------------------------------------------------------
 ## Install Vault Systemd Service
 
-read -d '' VAULT_SERVICE <<EOF
-[Unit]
-Description=Vault Agent
-Requires=network-online.target
-After=network-online.target
+# read -d '' VAULT_SERVICE <<EOF
+# [Unit]
+# Description=Vault Agent
+# Requires=network-online.target
+# After=network-online.target
 
-[Service]
-Restart=on-failure
-PermissionsStartOnly=true
-ExecStartPre=/sbin/setcap 'cap_ipc_lock=+ep' /usr/local/bin/vault
-ExecStart=/usr/local/bin/vault server -config /etc/vault.d
-ExecReload=/bin/kill -HUP $MAINPID
-KillSignal=SIGTERM
-User=vault
-Group=vault
+# [Service]
+# Restart=on-failure
+# PermissionsStartOnly=true
+# ExecStartPre=/sbin/setcap 'cap_ipc_lock=+ep' /usr/local/bin/vault
+# ExecStart=/usr/local/bin/vault server -config /etc/vault.d
+# ExecReload=/bin/kill -HUP $MAINPID
+# KillSignal=SIGTERM
+# User=vault
+# Group=vault
 
-[Install]
-WantedBy=multi-user.target
+# [Install]
+# WantedBy=multi-user.target
 
-EOF
+# EOF
 
-SYSTEMD_DIR="/lib/systemd/system"
-logger "Installing systemd services for Debian/Ubuntu"
-echo "$${VAULT_SERVICE}" | sudo tee $${SYSTEMD_DIR}/vault.service
-sudo chmod 0664 $${SYSTEMD_DIR}/vault*
-sudo mkdir -p $${USER_HOME}
-sudo chown vault: $${USER_HOME}
+# SYSTEMD_DIR="/lib/systemd/system"
+# logger "Installing systemd services for Debian/Ubuntu"
+# echo "$${VAULT_SERVICE}" | sudo tee $${SYSTEMD_DIR}/vault.service
+# sudo chmod 0664 $${SYSTEMD_DIR}/vault*
+# sudo mkdir -p $${USER_HOME}
+# sudo chown vault: $${USER_HOME}
 
 sudo systemctl enable vault
 sudo systemctl start vault
