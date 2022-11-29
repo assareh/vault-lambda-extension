@@ -272,7 +272,7 @@ cat >> apply_payload.json <<EOF
 }
 EOF
 
-vault write auth/jwt/role/tfc-demo-plan-role @apply_payload.json
+vault write auth/jwt/role/tfc-demo-apply-role @apply_payload.json
 
 logger "Complete"
 
